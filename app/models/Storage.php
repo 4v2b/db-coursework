@@ -1,7 +1,9 @@
 <?php
 
+namespace App\Models;
+
 class Storage{
-    function __construct(private mysqli $connection)
+    function __construct(private \mysqli $connection)
     {
         
     }
