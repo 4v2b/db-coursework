@@ -14,5 +14,6 @@
         <input type="password" id="password" name="password" required><br>
         <button type="submit">Login</button>
     </form>
+    <a href="/database_coursework/public/home">Продовжити як гість</a> 
 </body>
 </html>

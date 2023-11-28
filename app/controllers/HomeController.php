@@ -2,35 +2,41 @@
 
 namespace App\Controllers;
 
-use App\Models\Storage;
+use App\Models\MysqlStorage;
 use Core\Controller;
+use Exception;
 
 class HomeController extends Controller
 {
 
-    private $connection;
-
-    private $storage;
+    private MysqlStorage $storage;
 
     function __construct()
     {
-       
-        //$storage = new Storage($connection);
+      
+        if(isset($_COOKIE['session_exist'])){   
+            $connection = new \mysqli('localhost', 'root', 'password', 'company');
+            MysqlStorage::setConnection($connection);
+        }  
+        $this->storage = MysqlStorage::getInstance();
     }
 
     public function index()
     {
-        $data = ['message' => 'Hello World!'];
-        $this->render('main', $data);
+        if (!isset($_COOKIE['session_exist'])) {
+            $connection = new \mysqli('localhost', 'guest_user', '', 'company');
+            MysqlStorage::setConnection($connection);
+            $this->storage = MysqlStorage::getInstance();
+        }
+        $this->showTable();
     }
 
-
-    public function showTable()
+    public function showTable($table = 'order')
     {
-        $tableName =  $_GET["table"];
-        $table = $this->storage->getDataFromTable($tableName);
-        $columns = $this->storage->getColumnNames($tableName);
-        $this->render('main', ['table'=>$table, 'columns'=>$columns]);
+        echo isset($_COOKIE['session_exist']);
+        $table_ = $this->storage->getData($table);
+        $columns =$this->storage->getDataTitles($table);
+        $this->render('main', ['table' => $table_, 'columns' => $columns]);
     }
 
     public function login()
@@ -45,22 +51,27 @@ class HomeController extends Controller
         $username = $_POST['username'];
         $password = $_POST['password'];
 
-        $connection = new \mysqli('localhost',$username, $password,'company');
-
-        // Validate credentials (this is a basic example, in a real system, you'd hash passwords)
-        if ($username === 'admin' && $password === 'password') {
-            // Set a session variable to indicate that the user is authenticated
-            $_SESSION['authenticated'] = true;
-            echo 'Login successful!';
-        } else {
-            echo 'Invalid credentials';
+        try {
+            $connection = new \mysqli('localhost', $username, $password, 'company');
+            MysqlStorage::setConnection($connection);
+            $this->storage = MysqlStorage::getInstance();
+            //session_start();
+            setcookie('session_exist',true,time()+60*10);
+            //$_SESSION['authenticated'] = true;
+            echo $_SESSION['authenticated'];
+            header('Location: /database_coursework/public/show-table/country');
+        } catch (Exception $ex) {
+            setcookie('session_exist',true,time());
+            //$_SESSION['authenticated'] = false;
+            echo 'Invalid credentials';        
         }
     }
 
     public function logout()
     {
+        setcookie('session_exist',true,time()-1);
         // Log the user out by destroying the session
-        session_destroy();
+        //session_destroy();
         echo 'Logged out successfully!';
     }
 }

@@ -2,7 +2,10 @@
     "autoload": {
         "psr-4": {
             "App\\": "app/",
-            "Core\\": "app/core/"
+            "Core\\": "app/core"
         }
+    },
+    "require": {
+        "nikic/fast-route": "^1.3"
     }
 }

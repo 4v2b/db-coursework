@@ -28,9 +28,6 @@ class Router{
         $uri = $_SERVER['REQUEST_URI'];
         $method = $_SERVER['REQUEST_METHOD'];
 
-        echo $uri;
-        echo $method;
-
         if (isset($this->routes[$method][$uri])) {
             $this->callAction(...explode('@', $this->routes[$method][$uri]));
         } else {
