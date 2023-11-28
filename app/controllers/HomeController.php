@@ -2,6 +2,7 @@
 
 namespace App\Controllers;
 
+use App\Controllers\Connection;
 use App\Models\MysqlStorage;
 use Core\Controller;
 use Exception;
@@ -13,34 +14,19 @@ class HomeController extends Controller
 
     function __construct()
     {
-      
-        if(isset($_COOKIE['session_exist'])){   
-            $connection = new \mysqli('localhost', 'root', 'password', 'company');
-            MysqlStorage::setConnection($connection);
-        }  
+        MysqlStorage::setConnection(Connection::getConnection());
         $this->storage = MysqlStorage::getInstance();
     }
 
     public function index()
     {
-        if (!isset($_COOKIE['session_exist'])) {
-            $connection = new \mysqli('localhost', 'guest_user', '', 'company');
-            MysqlStorage::setConnection($connection);
-            $this->storage = MysqlStorage::getInstance();
-        }
-        $this->showTable();
-    }
-
-    public function showTable($table = 'order')
-    {
-        echo isset($_COOKIE['session_exist']);
-        $table_ = $this->storage->getData($table);
-        $columns =$this->storage->getDataTitles($table);
-        $this->render('main', ['table' => $table_, 'columns' => $columns]);
     }
 
     public function login()
     {
+        if (isset($_SESSION['auth'])) {
+            header("Location: /db-coursework/public/" . $_SESSION['role'] . '/home');
+        }
         // Display the login form
         $this->render('login');
     }
@@ -56,22 +42,49 @@ class HomeController extends Controller
             MysqlStorage::setConnection($connection);
             $this->storage = MysqlStorage::getInstance();
             //session_start();
-            setcookie('session_exist',true,time()+60*10);
+            setcookie('session_exist', true, time() + 60 * 10);
             //$_SESSION['authenticated'] = true;
-            echo $_SESSION['authenticated'];
-            header('Location: /database_coursework/public/show-table/country');
+            $_SESSION['auth'] = true;
+            $_SESSION['password'] = $password;
+            $_SESSION['user'] = $username;
+            $_SESSION['role'] = 'admin';
+
+            $role = $_SESSION['role'];
+
+            header("Location: /db-coursework/public/{$role}/home");
         } catch (Exception $ex) {
-            setcookie('session_exist',true,time());
-            //$_SESSION['authenticated'] = false;
-            echo 'Invalid credentials';        
+            setcookie('session_exist', true, time());
+            $_SESSION['auth'] = false;
+            echo 'Invalid credentials';
         }
     }
 
     public function logout()
     {
-        setcookie('session_exist',true,time()-1);
+        setcookie('session_exist', true, time() - 1);
         // Log the user out by destroying the session
-        //session_destroy();
+        session_unset();
+        session_destroy();
         echo 'Logged out successfully!';
+        header("Location: /db-coursework/public/");
+    }
+
+    public function home($role)
+    {
+        if (isset($_SESSION['auth'])) {
+            $role = $_SESSION['role'];
+        } else {
+            $role = 'guest';
+        }
+        $this->render($role . '-main');
+    }
+
+    public function show($table, $role = 'guest')
+    {
+        $storage = MysqlStorage::getInstance();
+        $rows = $storage->getData($table);
+        $titles = $storage->getDataTitles($table);
+
+        $this->render('main', ['table' => $rows, 'columns' => $titles]);
     }
 }

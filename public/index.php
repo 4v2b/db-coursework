@@ -1,8 +1,9 @@
 <?php
+session_start();
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
-$basePath = '/database_coursework/public';
+$basePath = '/db-coursework/public';
 
 $dispatcher = FastRoute\simpleDispatcher(function (FastRoute\RouteCollector $r) use($basePath) {
 
@@ -12,28 +13,28 @@ $dispatcher = FastRoute\simpleDispatcher(function (FastRoute\RouteCollector $r) 
     
     $r->addRoute('GET', $basePath.'/login', 'HomeController@login');
     $r->addRoute('GET', $basePath.'/logout', 'HomeController@logout');
-    $r->addRoute('GET', $basePath.'/show-table/{table}', 'HomeController@showTable');
+
     $r->addRoute('POST', $basePath.'/auth', 'HomeController@authenticate');
-    $r->addRoute('GET', $basePath.'/home', 'HomeController@index');
-    $r->addRoute('GET', $basePath.'', 'HomeController@index');
 
+    //$r->addRoute('GET', $basePath.'/home', 'HomeController@index');
+
+    $r->addRoute('GET', $basePath.'', 'HomeController@login');
+
+    //$r->addRoute('GET', $basePath.'/{role}', 'TableController@home');
+    $r->addRoute('GET', $basePath.'/{role}[/home]', 'HomeController@home');
+    $r->addRoute('GET', $basePath.'/{role}/{table}/delete/{id}', 'HomeController@index');
+
+    $r->addRoute('GET', $basePath.'/{role}/{table}[/show]', 'HomeController@show');
+
+    //$r->addRoute('GET', $basePath.'/{role}/{table}/show', 'HomeController@index');
+    //$r->addRoute('GET', $basePath.'/{role}/{table}/{action}', 'HomeController@index');
+    //$r->addRoute('GET', $basePath.'', 'HomeController@index');
 });
-
-
 
 // Fetch method and URI from the environment
 $httpMethod = $_SERVER['REQUEST_METHOD'];
-// $uri = $_SERVER['PHP_SELF'];
+
 $uri = $_SERVER['REQUEST_URI'];
-
-//$path = str_replace($basePath, '', $uri);
-
-//$path  = explode('?', $path , 2)[0];
-//
-
-//echo $path;
-
-//$routeInfo = $dispatcher->dispatch($httpMethod, $path);
 
 // Strip query string and trim trailing slash
 if (false !== $pos = strpos($uri, '?')) {

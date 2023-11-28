@@ -37,6 +37,13 @@ class MysqlStorage implements Storage{
         }
         return self::$instance;
     }
+
+    public static function status(){
+        if(isset($connection)){
+            return 'isset';
+        }
+        return 'dont exist';
+    }
 }
 
 ?>

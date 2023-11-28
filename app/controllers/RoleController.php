@@ -2,11 +2,11 @@
 
 namespace App\Controllers;
 
-use App\Models;
+use App\Models\MysqlStorage;
 use Core\Controller;
 use Exception;
 
-class ManagerController extends Controller
+class RoleController extends Controller
 {
 
 }
