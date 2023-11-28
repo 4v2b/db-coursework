@@ -6,7 +6,6 @@
     <title>Document</title>
 </head>
 <body>
-    Hello Admin
-    <div><a href="<?php echo $root?>/logout">Log Out</a></div>
+    
 </body>
 </html>

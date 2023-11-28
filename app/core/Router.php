@@ -2,52 +2,45 @@
 
 namespace App\Core;
 
-class Router{
-    protected $routes = [];
+class Router
+{
 
-    private $basePath = '';
-
-    public function setBasePath($basePath)
+    public static function run($dispatcher)
     {
-        $this->basePath = $basePath;
-    }
+        // Fetch method and URI from the environment
+        $httpMethod = $_SERVER['REQUEST_METHOD'];
 
-    public function get($uri, $controller)
-    {
-        $this->routes['GET'][$this->basePath.$uri] = $controller;
-    }
-
-
-    public function post($uri, $controller)
-    {
-        $this->routes['POST'][$this->basePath.$uri] = $controller;
-    }
-
-    public function run()
-    {
         $uri = $_SERVER['REQUEST_URI'];
-        $method = $_SERVER['REQUEST_METHOD'];
 
-        if (isset($this->routes[$method][$uri])) {
-            $this->callAction(...explode('@', $this->routes[$method][$uri]));
-        } else {
-            echo "404 Not Found";
+        // Strip query string and trim trailing slash
+        if (false !== $pos = strpos($uri, '?')) {
+            $uri = substr($uri, 0, $pos);
         }
-    }
+        $uri = rawurldecode($uri);
+        $uri = rtrim($uri, '/');
 
-    public function show(){
-        foreach($this->routes['GET'] as $key => $route){
-            echo $key."\n";
+        // Dispatch the request
+        $routeInfo = $dispatcher->dispatch($httpMethod, $uri);
+        // Handle the route result
+
+        switch ($routeInfo[0]) {
+            case \FastRoute\Dispatcher::NOT_FOUND:
+                echo '404 Not Found';
+                break;
+            case \FastRoute\Dispatcher::METHOD_NOT_ALLOWED:
+                $allowedMethods = $routeInfo[1];
+                echo '405 Method Not Allowed';
+                break;
+            case \FastRoute\Dispatcher::FOUND:
+                $handler = $routeInfo[1];
+                $vars = $routeInfo[2];
+                list($controllerClass, $method) = explode('@', $handler);
+
+                $controllerClass = "\\App\\Controllers\\" . $controllerClass;
+                $controller = new $controllerClass;
+
+                call_user_func_array([$controller, $method], $vars);
+                break;
         }
-    }
-
-    protected function callAction($controller, $action)
-    {
-        $controller = "App\\Controllers\\{$controller}";
-        $controllerInstance = new $controller();
-        $controllerInstance->$action();
     }
 }
-
-
-?>

@@ -6,8 +6,8 @@
     <title>Головна</title>
 </head>
 <body>
-    <div><a href='/db-coursework/public/guest/product'>Товари</a></div>
-    <div><a href='/db-coursework/public/guest/order'>Замовлення</a></div>
-    <div><a href='/db-coursework/public/guest/affiliate'>Філії</a></div>
+    <div><a href='<?php echo $root?>/guest/product'>Товари</a></div>
+    <div><a href='<?php echo $root?>/guest/order'>Замовлення</a></div>
+    <div><a href='<?php echo $root?>/guest/affiliate'>Філії</a></div>
 </body>
 </html>
