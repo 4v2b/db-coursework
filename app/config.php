@@ -5,7 +5,8 @@ return [
         'server'=>'localhost',
         'name'=>'company'
     ],
-    'url_base'=>'/db-coursework/public'
+    'url_base'=>'/db-coursework/public',
+    'roles'=>['guest','admin','manager']
 ]
 
 ?>

@@ -5,11 +5,9 @@ namespace App\Controllers;
 use App\Controllers\Connection;
 use App\Models\MysqlStorage;
 use Core\Controller;
-use Exception;
 
 class HomeController extends Controller
 {
-
     private MysqlStorage $storage;
 
     function __construct()
@@ -18,17 +16,13 @@ class HomeController extends Controller
         $this->storage = new MysqlStorage($connection);
     }
 
-    public function index()
-    {
-    }
-
     public function login()
     {
         if (isset($_SESSION['auth'])) {
             $this->redirect("/" . $_SESSION['role'] . '/home');
         }
         // Display the login form
-        $this->render('login');
+        return $this->render('login');
     }
 
     public function authenticate()
@@ -37,46 +31,51 @@ class HomeController extends Controller
         $username = $_POST['username'];
         $password = $_POST['password'];
 
-        if (Connection::make() !== false) {
-            $_SESSION['auth'] = true;
-            $_SESSION['password'] = $password;
-            $_SESSION['user'] = $username;
-            $_SESSION['role'] = 'admin';
+        if (Connection::make() === false) {
+            $this->login();
+        }
 
-            setcookie('session_exist', true, time() + 60 * 10);
+        $_SESSION['auth'] = true;
+        $_SESSION['password'] = $password;
+        $_SESSION['user'] = $username;
 
-            //Unnececary
-            $connection = Connection::make();
-            $this->storage = new MysqlStorage($connection);
+        $connection = Connection::make();
+        $this->storage = new MysqlStorage($connection);
 
-            $role = $_SESSION['role'];
+        $config = require __DIR__ . '/../config.php';
+
+        $role = $this->storage->getRole();
+
+        if (in_array($role, $config['roles'])) {
+            $_SESSION['role'] = $role;
             $this->redirect("/{$role}/home");
         } else {
-            setcookie('session_exist', true, time());
-            $_SESSION['auth'] = false;
-            echo 'Invalid credentials';
+            $this->logout();
         }
     }
 
     public function logout()
     {
-        setcookie('session_exist', true, time() - 1);
+        //setcookie('session_exist', true, time() - 1);
         // Log the user out by destroying the session
         session_unset();
         session_destroy();
-        echo 'Logged out successfully!';
+        //echo 'Logged out successfully!';
 
-        $this->redirect("/");
+       $this->redirect("/guest");
     }
 
-    public function home($role)
+    public function home($role = 'guest')
     {
-        if (isset($_SESSION['auth'])) {
-            $role = $_SESSION['role'];
-        } else {
-            $role = 'guest';
+        if (!isset($_SESSION['auth'])) {
+            $_SESSION['role'] = 'guest';
         }
-        $this->render($role . '-main');
+
+        if ($role !== $_SESSION['role']) {
+            $this->redirect("/" . $_SESSION['role']);
+        }
+
+        return $this->render($role . '-main');
     }
 
     public function show($table, $role = 'guest')
@@ -84,6 +83,6 @@ class HomeController extends Controller
         $rows = $this->storage->getData($table);
         $titles = $this->storage->getDataTitles($table);
 
-        $this->render('main', ['table' => $rows, 'columns' => $titles]);
+        return $this->render('main', ['table' => $rows, 'columns' => $titles]);
     }
 }
