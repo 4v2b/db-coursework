@@ -2,10 +2,20 @@
 
 namespace Core;
 
+use App\Models\MysqlStorage;
+use App\Controllers\Connection;
+
 class Controller
 {
+    protected MysqlStorage $storage;
 
-    public function render($view, $data = [])
+    function __construct()
+    {
+        $connection = Connection::make();
+        $this->storage = new MysqlStorage($connection);
+    }
+
+    public function view($view, $data = [])
     {
         extract($data);
         $root = $this->getUrlBase();
