@@ -37,10 +37,9 @@
     foreach ($row as $value) {
       echo "<td>" . $value . "</td>";
     }
-    
-    echo "<td><form method='POST' action='{$root}/".$_SESSION['role']."/{$tableName}/delete'>";
-    foreach($row as $key => $value1)
-    {
+
+    echo "<td><form method='POST' action='{$root}/{$role}/{$tableName}/delete'>";
+    foreach ($row as $key => $value1) {
       echo  "<input type='hidden' value='{$value1}' name='{$key}' ></input>";
     }
     echo "<input type='submit' value='Видалити'></input></form></td>";
@@ -48,6 +47,22 @@
     echo "<td><button>Редагувати</button></td>";
     echo "</tr>";
   }
+  echo "<tr>";
+  echo "<form method='POST' action='{$root}/{$role}/{$tableName}/add'>";
+  foreach($types as $fieldName => $type){
+    echo "<td>";
+
+    echo  "<input required type='{$type}' name='{$fieldName}' ></input>";
+
+    echo "</td>";
+
+  }
+  echo "<td colspan='2'>";
+
+  echo "<input type='submit' value='Додати'></input></form></td>";
+  echo "</form>";
+  echo "</td>";
+  echo "</tr>";
 
   echo "</table>";
   ?>

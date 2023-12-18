@@ -13,6 +13,8 @@ $dispatcher = FastRoute\simpleDispatcher(function (FastRoute\RouteCollector $rou
     $router->get($basePath . '/{role}/{table}[/show]', 'TableController@show');
 
     $router->post($basePath . '/{role}/{table}/delete', 'TableController@delete');
+    $router->post($basePath . '/{role}/{table}/add', 'TableController@add');
+
     $router->post($basePath . '/auth', 'AccessController@authenticate');
 
 });

@@ -9,7 +9,15 @@ use Core\Controller;
 class TableController extends Controller
 {
 
-    public function add(){
+    public function add($table, $role){
+        $row = [];
+
+        foreach($_POST as $column => $value){
+            $row[$column] = $value;
+        }
+        $this->storage->add($table, $row);
+
+        return $this->redirect("/{$role}/{$table}");
 
     }
 
@@ -39,12 +47,64 @@ class TableController extends Controller
     public function show($table, $role = 'guest')
     {
         if(false !== $data = $this->storage->fetch($table)){
-            return $this->view('main', ['rows'=>$data['rows'], 'role'=>$role, 'tableName'=>$table]);
+
+            $fields = $this->storage->tableDetails($table);
+
+            $fieldsTypes = [];
+
+            foreach($fields as $field){
+                $fieldsTypes[$field['Field']] = $this->adjustSqlTypesToHtml($field['Type']);
+            }
+
+            return $this->view('main', ['rows'=>$data, 'role'=>$role, 'tableName'=>$table,'types'=> $fieldsTypes]);
         }
         else {
             return $this->redirect("/{$role}");
         }
 
+    }
+
+    private function adjustSqlTypesToHtml($sqlType) {
+
+        if(str_contains('enum',$sqlType)){
+                return 'enum';
+        }
+
+        switch ($sqlType) {
+            case 'int':
+            case 'tinyint':
+            case 'smallint':
+            case 'mediumint':
+            case 'bigint':
+                return 'number';
+    
+            case 'float':
+            case 'double':
+            case 'decimal':
+                return 'number'; // You might want to use 'text' or 'tel' depending on your requirements.
+    
+            case 'char':
+            case 'varchar':
+            case 'text':
+            case 'tinytext':
+            case 'mediumtext':
+            case 'longtext':
+                return 'text';
+    
+            case 'date':
+                return 'date';
+    
+            case 'time':
+                return 'time';
+    
+            case 'datetime':
+            case 'timestamp':
+                return 'datetime-local';
+    
+            default:{
+                return 'text';
+            }
+        }
     }
 
 }

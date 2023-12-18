@@ -11,6 +11,21 @@ class MysqlStorage implements Storage
     {
     }
 
+    public function tableDetails($tableName) {
+        try {
+            $table = $this->connection->query("DESCRIBE `" . $tableName . "`");
+
+            $result = [];
+
+            while ($row = $table->fetch_assoc()) {
+                $result[] = $row;
+            }
+            return $result;
+        } catch (Exception $ex) {
+            return false;
+        }
+    }
+
     public function getRole()
     {
         return str_replace(['%', '@', '`'], '', $this->connection
@@ -38,7 +53,7 @@ class MysqlStorage implements Storage
             while ($row = $table->fetch_assoc()) {
                 $result[] = $row;
             }
-            return ['rows' => $result];
+            return $result;
         } catch (Exception $ex) {
             return false;
         }
@@ -88,5 +103,9 @@ class MysqlStorage implements Storage
         extract($rows);
 
         $this->connection->query("UPDATE TABLE {$table} SET somerow WHERE id = 'value'");
+    }
+
+    public function add($table, $row){
+        
     }
 }
